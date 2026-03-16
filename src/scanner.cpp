@@ -1,11 +1,12 @@
-#include <listing.hpp>
+#include <scanner.hpp>
 
 std::vector<std::string> blacklist = {
     ".git", "bin", "obj", "lib", "node_modules", ".vs"};
 
 std::vector<std::string> whitelist = {
     ".py", ".java", ".c", ".cpp", ".h", ".hpp", ".cs",
-    ".html", ".css", ".js", ".rb", ".go", ".asm", ".v"};
+    ".html", ".css", ".js", ".rb", ".go", ".asm", ".v",
+    "makefile"};
 
 bool in_whitelist(fs::path path)
 {
@@ -31,10 +32,10 @@ bool in_blacklist(fs::path path)
     return false;
 }
 
-std::vector<fs::path> list_dirs(std::string path)
+std::vector<fs::path> list_dirs(fs::path path)
 {
     std::vector<fs::path> paths;
-    
+
     for (const auto &entry : fs::directory_iterator(path))
     {
         if (entry.is_directory())
@@ -45,10 +46,10 @@ std::vector<fs::path> list_dirs(std::string path)
     return paths;
 }
 
-std::vector<fs::path> list_dirs_recursive(std::string path)
+std::vector<fs::path> list_dirs_recursive(fs::path path)
 {
     std::vector<fs::path> paths;
-    
+
     auto it = fs::recursive_directory_iterator(path);
     auto endit = fs::end(it);
 
@@ -66,10 +67,10 @@ std::vector<fs::path> list_dirs_recursive(std::string path)
     return paths;
 }
 
-std::vector<fs::path> list_files(std::string path)
+std::vector<fs::path> list_files(fs::path path)
 {
     std::vector<fs::path> paths;
-    
+
     for (const auto &entry : fs::directory_iterator(path))
     {
         if (entry.is_regular_file())
@@ -77,14 +78,14 @@ std::vector<fs::path> list_files(std::string path)
             paths.push_back(entry.path().generic_string());
         }
     }
-    
+
     return paths;
 }
 
-std::vector<fs::path> list_files_recursive(std::string path)
+std::vector<fs::path> list_files_recursive(fs::path path)
 {
     std::vector<fs::path> paths;
-    
+
     auto it = fs::recursive_directory_iterator(path);
     auto endit = fs::end(it);
 

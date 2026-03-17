@@ -1,4 +1,4 @@
-#include <parser.hpp>
+#include <lexer.hpp>
 
 /**
  * @brief for analyzing files that has comments like C

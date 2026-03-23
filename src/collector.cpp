@@ -1,5 +1,3 @@
-#include <scanner.hpp>
-#include <parser.hpp>
 #include <collector.hpp>
 #include <lexer.hpp>
 #include <unordered_set>
@@ -25,74 +23,30 @@ namespace collector
         return nullptr;
     }
 
-void gather_file_stats(fs::path path) // Singular, outputs directly
-{
-
-    auto func = get_analyzer(path.extension().string());
-    if (func)
+    std::map<std::string, types::FileStats> gather_files_stats(std::vector<fs::path> files)
     {
-        FileStats file_stats = func(path);
-        std::cout << "[0] --- File: " << path.filename() << "\n";
-        std::cout << "blank lines   : " << file_stats.blank_line << "\n";
-        std::cout << "comment lines : " << file_stats.comment_line << "\n";
-        std::cout << "code lines    : " << file_stats.code_line << "\n";
-        std::cout << "total         : " << file_stats.total_line << "\n";
-    }
-    else
-    {
-        std::cout << "[0] --- File: " << path.filename() << "\n";
-        std::cout << "Undefined type: " << path.extension() << "\n";
-    }
-}
+        std::map<std::string, types::FileStats> gathered_stats;
 
-void gather_files_stats(fs::path path)
-{
-    auto files = list_files(path);
-
-    for (const auto &file : files)
-    {
-        std::string ext = file.extension().string();
-        auto func = get_analyzer(ext);
-        if (func)
+        for (const auto &file : files)
         {
-            FileStats file_stats = func(file);
-            FileStats &ex_stats = total_stats[ext];
+            std::string ext = file.extension().string();
+            auto func = get_analyzer(ext);
+            if (func)
+            {
+                types::FileStats file_stats = func(file);
+                types::FileStats &ex_stats = gathered_stats[ext];
 
-            ex_stats.blank_line += file_stats.blank_line;
-            ex_stats.comment_line += file_stats.comment_line;
-            ex_stats.code_line += file_stats.code_line;
-            ex_stats.total_line += file_stats.total_line;
-            ex_stats.file_count++;
+                ex_stats.blank_line += file_stats.blank_line;
+                ex_stats.comment_line += file_stats.comment_line;
+                ex_stats.code_line += file_stats.code_line;
+                ex_stats.total_line += file_stats.total_line;
+                ex_stats.file_count++;
+            }
+            else
+            {
+                std::cout << "Undefined type: " << file.extension() << "\n";
+            }
         }
-        else
-        {
-            std::cout << "Undefined type: " << file.extension() << "\n";
-        }
-    }
-}
-
-void gather_recursive_file_stats(fs::path path)
-{
-    auto files = list_files_recursive(path);
-
-    for (const auto &file : files)
-    {
-        std::string ext = file.extension().string();
-        router func = get_analyzer(ext);
-        if (func)
-        {
-            FileStats file_stats = func(file);
-            FileStats &ex_stats = total_stats[ext];
-
-            ex_stats.blank_line += file_stats.blank_line;
-            ex_stats.comment_line += file_stats.comment_line;
-            ex_stats.code_line += file_stats.code_line;
-            ex_stats.total_line += file_stats.total_line;
-            ex_stats.file_count++;
-        }
-        else
-        {
-            std::cout << "Undefined type: " << file.extension() << "\n";
-        }
+        return gathered_stats;
     }
 }

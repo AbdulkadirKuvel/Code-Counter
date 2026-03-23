@@ -1,11 +1,11 @@
+#pragma once
 #ifndef COLLECTOR_HPP
 #define COLLECTOR_HPP
 
 #include <filesystem>
-#include <scanner.hpp>
-#include <parser.hpp>
-#include <iostream>
+#include <types.hpp>
 #include <unordered_set>
+#include <vector>
 #include <map>
 
 namespace fs = std::filesystem;
@@ -46,13 +46,14 @@ const std::unordered_set<std::string> xml_style = {
 
 const std::string ruby = ".rb";
 
-std::map<std::string, FileStats> total_stats;
+namespace collector
+{
+    using router = types::FileStats (*)(fs::path);
 
-using router = FileStats(*)(fs::path);
+    router get_analyzer(const std::string);
 
-router get_analyzer(const std::string);
-void gather_file_stats(fs::path);
-void gather_files_stats(fs::path);
-void gather_recursive_file_stats(fs::path);
+    std::map<std::string, types::FileStats> gather_files_stats(std::vector<fs::path>);
+    
+}
 
 #endif

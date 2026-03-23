@@ -21,7 +21,9 @@ APP_NAME := app
 # -g: Hata ayıklama (Debug) sembollerini koda gömer (SegFault bulmak için kritik!).
 # -I$(INC_DIR): Derleyiciye başlık dosyalarını (header) nerede arayacağını söyler.
 CFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c11 -g
-CXXFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c++17 -g
+CXXFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c++23 -O3 -g
+# Windows ve C++23 <print> kütüphanesi için zorunlu Linker bayrağı
+LDFLAGS := -lstdc++exp
 
 # --- 4. DOSYA TESPİTİ ---
 # src klasöründeki tüm .c ve .cpp dosyalarını otomatik bul.
@@ -63,32 +65,32 @@ prepare:
 
 # Linkleme (Bağlama) İşlemi: Tüm .o dosyalarını al ve çalıştırılabilir programı (app) üret.
 $(TARGET): $(OBJS)
-	@echo "--- [LINK] Program baglaniyor: $@ ---"
-	@$(CXX) $(OBJS) -o $@
-	@echo "--- [BASARILI] Derleme tamamlandi! ---"
+	@echo --- [LINK] Program baglaniyor: $@ ---
+	@$(CXX) $(OBJS) -o $@ $(LDFLAGS)
+	@echo --- [BASARILI] Derleme tamamlandi! ---
 
 # C++ dosyalarını derleme kuralı ($<: kaynak dosya, $@: hedef obje dosyası)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@echo "[C++] Derleniyor: $<"
+	@echo [C++] Derleniyor: $<
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # C dosyalarını derleme kuralı
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@echo "[C]   Derleniyor: $<"
+	@echo [C]   Derleniyor: $<
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 
 run: compile
-	@echo "--- [RUN] Proje calistiriliyor ---"
+	@echo --- [RUN] Proje calistiriliyor ---
 	@$(TARGET) $(ARGS)
-	@echo "--- [BASARILI] Yurutme tamamlandi ---"
+	@echo --- [BASARILI] Yurutme tamamlandi ---
 
 # --- 7. TEMİZLİK ---
 # 'make clean' yazıldığında derlenmiş dosyaları siler, projeyi sıfırlar.
 clean:
-	@echo "--- [CLEAN] Proje temizleniyor ---"
+	@echo --- [CLEAN] Proje temizleniyor ---
 	@$(CLEAN_CMD)
-	@echo "--- [BASARILI] Temizlik bitti ---"
+	@echo --- [BASARILI] Temizlik bitti ---
 	@$(SLEEP_CMD) 
 	@$(SCREEN_CLEAR)
 

@@ -1,26 +1,29 @@
 #include <scanner.hpp>
 #include <parser.hpp>
 #include <collector.hpp>
+#include <lexer.hpp>
+#include <unordered_set>
+#include <map>
+#include <iostream>
 
-router get_analyzer(const std::string ext)
+namespace collector
 {
-    // std::cout << "Debugging...\n";
-    if (c_style.find(ext) != c_style.end())
+    router get_analyzer(const std::string ext)
     {
-        // std::cout << "Debugging...\n";
-        return file_analyzer_c;
+        if (c_style.find(ext) != c_style.end())
+        {
+            return lexer::file_analyzer_c;
+        }
+        if (py_style.find(ext) != py_style.end())
+        {
+            return lexer::file_analyzer_py;
+        }
+        // if (py_style.find(ext) != py_style.end())
+        //     return file_analyzer_py; // TODO: add support for other languages
+        // if (py_style.find(ext) != py_style.end())
+        //     return file_analyzer_py; // TODO
+        return nullptr;
     }
-    if (py_style.find(ext) != py_style.end())
-    {
-        // std::cout << "Debugging...\n";
-        return file_analyzer_py;
-    }
-    // if (py_style.find(ext) != py_style.end())
-    //     return file_analyzer_py; // TODO
-    // if (py_style.find(ext) != py_style.end())
-    //     return file_analyzer_py; // TODO
-    return nullptr;
-}
 
 void gather_file_stats(fs::path path) // Singular, outputs directly
 {

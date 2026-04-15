@@ -22,14 +22,22 @@ bool in_blacklist(fs::path path)
 {
     if (blacklist.find(path.extension().string()) != blacklist.end())
         return true;
+
     return false;
 }
 
 namespace scanner
 {
-    void scan(types::Config config)
+    std::vector<fs::path> scan(types::Config config)
     {
-        return;
+        std::vector<fs::path> paths;
+        if (config.recursive) {
+            paths = list_files_recursive(config.path);
+        }
+        else {
+            paths = list_files(config.path);
+        }
+        return paths;
     }
 
     std::vector<fs::path> list_files(fs::path path)

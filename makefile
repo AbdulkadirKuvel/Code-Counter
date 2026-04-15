@@ -21,7 +21,7 @@ APP_NAME := app
 # -g: Hata ayıklama (Debug) sembollerini koda gömer (SegFault bulmak için kritik!).
 # -I$(INC_DIR): Derleyiciye başlık dosyalarını (header) nerede arayacağını söyler.
 CFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c11 -g
-CXXFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c++23 -O3 -g
+CXXFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c++26 -O3 -g
 # Windows ve C++23 <print> kütüphanesi için zorunlu Linker bayrağı
 LDFLAGS := -lstdc++exp
 

@@ -1,34 +1,41 @@
 #include <iostream>
 #include <string>
-#include <listing.hpp>
+#include <scanner.hpp>
+#include <collector.hpp>
+#include <formatter.hpp>
 #include <filesystem>
+#include <parser.hpp>
 
-namespace fs = std::filesystem;
+// namespace fs = std::filesystem;
 
 int main(int argc, char *argv[])
 {
-    std::string path;
-    if (argc < 2)
+    fs::path path;
+    auto config = parser(argc, argv); // TODO
+
+    if (config.help_requested)
     {
-        std::cout << "Using current path as default\n";
-        path = ".";
+        formatter::print_help();
+        exit(0);
     }
-    else
+    else if (config.error_requested)
     {
-        path = argv[1];
+        formatter::print_error(config.error_info);
+        exit(0);
     }
 
-    // std::cout << "--- list_dirs ---" << std::endl;
-    // std::cout << "--- list_dirs_recursive ---" << std::endl;
-    // std::cout << "--- list_files ---" << std::endl;
-    // std::cout << "--- list_files_recursive ---" << std::endl;
-    auto paths = list_dirs(path);
-    // auto paths = list_dirs_recursive(path);
-    // auto paths = list_files(path);
-    // auto paths = list_files_recursive(path);
-    for (size_t i = 0; i < paths.size(); i++) {
-        std::cout << paths.at(i) << "\n"; 
-    }
-    
+    // std::cout << "[Devinfo]: after parser before scanner" << std::endl;
+    auto paths = scanner::scan(config); // TODO
+    // std::cout << "[Devinfo]: after scanner before collector" << std::endl;
+
+    auto stats = collector::gather_files_stats(paths);
+    formatter::print_files_stats(stats);
+
+    // std::string str = "hello human!";
+
+    // std::cout << "str        |" << str << "|" << std::endl;
+    // std::cout << "str substr |" << str.substr(0, 5) << "|" << std::endl;
+    // std::cout << "str substr |" << str.substr(6) << "|" << std::endl;
+
     return 0;
 }

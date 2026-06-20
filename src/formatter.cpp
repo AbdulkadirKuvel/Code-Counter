@@ -66,6 +66,12 @@ namespace formatter
         std::println("└────────────────────┴──────────────┴───────────────────────────────┘");
     }
 
+    void print_error(types::Error error)
+    {
+        std::println("{}{}{}", color::bold_red, error.title, color::reset); // TODO: Maybe colorization afterwards?
+        std::println("{}{}{}", color::red, error.message, color::reset);
+    }
+
     // void log_files_stats(std::map<std::string, types::FileStats> gathered_stats, std::string name = "output.log")
     // {
     //     const char *upmost_border = "┌────────────┬─────────┬───────────┬───────────┬───────────┬───────────┐";

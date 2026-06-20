@@ -7,10 +7,16 @@ namespace fs = std::filesystem;
 
 namespace types
 {
+    struct Error {
+        std::string title = "";        
+        std::string message = "";
+    };
+    
     struct Config
     {
         // Initial Configuration
         bool help_requested = false;
+        bool error_requested = false;
         bool recursive = false;
         bool output_json = false;
         bool output_text = false;
@@ -25,6 +31,9 @@ namespace types
             ".git", "bin", "obj", "lib", "node_modules", ".vs"};
 
         fs::path path = ".";
+        // fs::path config_path = "config.txt";
+        fs::path config_path;
+        Error error_info;
     };
 
     struct FileStats

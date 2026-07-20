@@ -18,10 +18,10 @@ namespace types
         bool help_requested = false;
         bool error_requested = false;
         bool recursive = false;
-        bool output_json = false;
-        bool output_text = false;
-        bool output_console = true;
-
+        bool json_form = false;
+        bool text_form = false;
+        bool table_form = true;
+        
         std::unordered_set<std::string> whitelist = {
             ".py", ".java", ".c", ".cpp", ".h", ".hpp", ".cs",
             ".html", ".css", ".js", ".rb", ".go", ".asm", ".v",
@@ -34,6 +34,7 @@ namespace types
         // fs::path config_path = "config.txt";
         fs::path config_path;
         Error error_info;
+        fs::path output_path;
     };
 
     struct FileStats

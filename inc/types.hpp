@@ -7,11 +7,12 @@ namespace fs = std::filesystem;
 
 namespace types
 {
-    struct Error {
-        std::string title = "";        
+    struct Error
+    {
+        std::string title = "";
         std::string message = "";
     };
-    
+
     struct Config
     {
         // Initial Configuration
@@ -19,9 +20,9 @@ namespace types
         bool error_requested = false;
         bool recursive = false;
         bool json_form = false;
-        bool text_form = false;
+        bool md_form = false;
         bool table_form = true;
-        
+
         std::unordered_set<std::string> whitelist = {
             ".py", ".java", ".c", ".cpp", ".h", ".hpp", ".cs",
             ".html", ".css", ".js", ".rb", ".go", ".asm", ".v",

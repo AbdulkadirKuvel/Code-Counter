@@ -163,7 +163,7 @@ types::Config parser(int argc, char *argv[])
 
                             if (value.empty())
                             {
-                                continue; // ADD FEATURE: Throw error
+                            continue; // TODO: Throw error
                             }
                             bool val = tolower(value[0]) == 't'; // "true" or "false"
 
@@ -173,11 +173,11 @@ types::Config parser(int argc, char *argv[])
                             }
                             else if (key == "text")
                             {
-                                config.output_text = val;
+                            config.md_form = val;
                             }
                             else if (key == "json")
                             {
-                                config.output_json = val;
+                            config.json_form = val;
                             }
                             else if (key == "blacklist")
                             {

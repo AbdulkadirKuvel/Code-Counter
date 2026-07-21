@@ -58,49 +58,67 @@ types::Config parser(int argc, char *argv[])
             else if (arg == "-c" || arg == "--config") // CONFIG USE HAS BEEN DETECTED
             {
                 config_use = true;
-                if (i + 1 < argc)
+                if (i + 1 >= argc)
                 {
-                    if (argv[i + 1][0] != '-') // CONFIG FILE NAME HAS BEEN CONFIGURED
-                    {
-                        fs::path target(argv[i + 1]);
+                            config.error_requested = true;
+                    config.error_info.title = "Not Enough Arguments";
+                    config.error_info.message = "Config flag has been risen but no argument given afterwards.";
+                            return config;
+                        }
 
-                        if (fs::is_regular_file(target)) // Given path is a filename
-                        {
-                            config.config_path = argv[i + 1];
-                            config_file_name_exists = true;
-                            i++;
-                        }
-                        else if (fs::is_directory(target)) // Given path is not a folder: Error
-                        {
-                            // This is a path, error
-                            config.error_requested = true;
-                            config.error_info.title = "Not a File Error";
-                            config.error_info.message = "Given path \"", target, "\" is a directory.";
-                            return config;
-                        }
-                        else // Given argument neither a file or folder: Error
-                        {
-                            config.error_requested = true;
-                            config.error_info.title = "False File Path Error";
-                            config.error_info.message = "Given argument \"", argv[i + 1], "\" is not a config file.";
-                            return config;
-                        }
-                    }
-                    else // Config filename has been forgotten: Error
+                std::string_view next_arg = argv[i + 1];
+
+                if (next_arg.starts_with('-')) // Next argument is a flag: Error
                     {
                         config.error_requested = true;
                         config.error_info.title = "Missing Filename Error";
                         config.error_info.message = "Config flag has been risen but no file indicated.";
                         return config;
                     }
+
+                fs::path target(next_arg);
+
+                if (fs::is_directory(target)) // Given path is a folder: Error
+                {
+                    config.error_requested = true;
+                    config.error_info.title = "Not a File Error";
+                    config.error_info.message = std::format("Given path \"{}\" is a directory.", target.generic_string());
+                    return config;
                 }
-                else {
+
+                if (!fs::exists(target)) // Given path does not exist: Error
+                {
+                    config.error_requested = true;
+                    config.error_info.title = "No File Found Error";
+                    config.error_info.message = std::format("Given file \"{}\" could not be found.", target.generic_string());
+                    return config;
+                }
+
+                if (!fs::is_regular_file(target)) // Given path is not a valid file (e.g. Device Files, sockets...): Error
+                {
                         config.error_requested = true;
                         config.error_info.title = "Missing Filename Error";
                         config.error_info.message = "Config flag has been risen but no file indicated.";
                         return config;
-
                 }
+
+                // Everything is A-okay.
+                config.config_path = argv[i + 1];
+                // config_file_name_exists = true;
+                i++; 
+            }
+            else if (!arg.starts_with('-')) // Handle if path is not a folder.
+            {
+                fs::path target(arg);
+
+                if (!fs::is_directory(target)) {
+                    config.error_requested = true;
+                    config.error_info.title = "Not a Directory Error";
+                    config.error_info.message = std::format("Given path \"{}\" is not a directory.", target.generic_string());
+                    return config;
+                }
+
+                config.path = target;
             }
         }
 

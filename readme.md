@@ -7,6 +7,8 @@
 
 Built with **systems programming** principles in mind, it leverages C++23 features to deliver maximum performance through zero-cost abstractions, memory safety, and highly optimized I/O operations.
 
+Please note that this tool is under active development.
+
 ---
 
 ## ✨ Features

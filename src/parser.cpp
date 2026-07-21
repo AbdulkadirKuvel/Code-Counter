@@ -12,7 +12,6 @@ types::Config parser(int argc, char *argv[])
 
         // First iterator: defines if user wants to get help, or use a prepared config file
         bool config_use = false;
-        bool config_file_name_exists = false;
         for (int i = 1; i < argc; i++)
         {
             std::string_view arg = argv[i];

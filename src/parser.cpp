@@ -21,6 +21,40 @@ types::Config parser(int argc, char *argv[])
                 config.help_requested = true;
                 return config;
             }
+            else if (arg == "-o" || arg == "--output")
+            {
+                if (i + 1 >= argc)
+                {
+                    config.error_requested = true;
+                    config.error_info.title = "Not Enough Arguments";
+                    config.error_info.message = "Output flag has been risen but no argument given afterwards.";
+                    return config;
+                }
+
+                std::string_view next_arg = argv[i + 1];
+
+                if (next_arg.starts_with('-')) // Next argument is a flag: Error
+                {
+                    config.error_requested = true;
+                    config.error_info.title = "Missing Filename Error";
+                    config.error_info.message = "Output flag has been risen but no path indicated.";
+                    return config;
+                }
+
+                fs::path target(next_arg);
+
+                if (fs::exists(target)) // TODO: user may want to overwrite?
+                {
+                    config.error_requested = true;
+                    config.error_info.title = "Existing File Error";
+                    config.error_info.message = "Given output path already exists.";
+                    return config;
+                }
+
+                // Everything is A-okay.
+                config.output_path = argv[i + 1];
+                i++;
+            }
             else if (arg == "-c" || arg == "--config") // CONFIG USE HAS BEEN DETECTED
             {
                 config_use = true;

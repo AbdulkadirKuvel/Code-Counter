@@ -299,25 +299,29 @@ types::Config parser(int argc, char *argv[])
             {
                 config.recursive = true;
             }
-            else if (arg == "-t" || arg == "--text")
+            else if (arg == "-m" || arg == "--markdown")
             {
-                config.output_text = true;
+                config.md_form = true;
             }
             else if (arg == "-j" || arg == "--json")
             {
-                config.output_json = true;
+                config.json_form = true;
             }
             else if (arg == "-c" || arg == "--config")
             {
-                if (!config_file_name_exists)
-                    continue;
-                else
+                // if (!config_file_name_exists)
+                //     continue;
+                // else
                     i++;
             }
-            else
+            else if (arg == "-o" || arg == "--output")
             {
-                config.path = arg;
+                i++;
             }
+            // else // Path has been assigned in the first iterator.
+            // {
+            //     config.path = arg;
+            // }
         }
     }
     return config;

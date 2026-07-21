@@ -44,7 +44,7 @@ namespace collector
             }
             else
             {
-                std::cout << "Undefined type: " << file.extension() << "\n";
+                std::cout << "[Devinfo]: Undefined type: " << file.extension() << "\n";
             }
         }
         return gathered_stats;

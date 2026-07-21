@@ -43,12 +43,16 @@ namespace scanner
     {
         std::vector<fs::path> paths;
 
-        for (const auto &entry : fs::directory_iterator(path))
+        auto it = fs::directory_iterator(path);
+        auto endit = fs::end(it);
+
+        while (it != endit)
         {
-            if (entry.is_regular_file())
+            if (in_whitelist(it->path()))
             {
-                paths.push_back(entry.path().generic_string());
+                paths.push_back(it->path().generic_string());
             }
+            ++it;
         }
 
         return paths;

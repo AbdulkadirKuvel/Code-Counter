@@ -1,6 +1,7 @@
 # CodeCounter 🚀
 
 ![C++](https://img.shields.io/badge/C++-23-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 **CodeCounter** is aiming to be blazing-fast, modern C++ Command Line Interface (CLI) utility designed for analyzing and counting lines of code, comments, and blank lines across large-scale codebases. 
 

@@ -130,11 +130,10 @@ types::Config parser(int argc, char *argv[])
             {
                 config.error_requested = true;
                 config.error_info.title = "File Could Not Open";
-                config.error_info.message = "File \"" + config.config_path.generic_string() + "\" could not open for reading.";
+                config.error_info.message = std::format("File \"{}\" could not open for reading.", config.config_path.generic_string());
                 return config;
             }
-            else
-            {
+
                 std::string line;
                 // Second iterator: reads the config file.
                 while (std::getline(file, line))
@@ -143,6 +142,7 @@ types::Config parser(int argc, char *argv[])
                         continue;
                     else if (line[0] == '#') // comment
                     {
+                    // ignore
                     }
                     else // must be code
                     {

@@ -5,6 +5,9 @@
 #include <formatter.hpp>
 #include <filesystem>
 #include <parser.hpp>
+#include <IReportFormatter.hpp>
+#include <TableFormatter.hpp>
+#include <JsonFormatter.hpp> // TODO
 
 // namespace fs = std::filesystem;
 
@@ -24,18 +27,11 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    // std::cout << "[Devinfo]: after parser before scanner" << std::endl;
     auto paths = scanner::scan(config); // TODO
-    // std::cout << "[Devinfo]: after scanner before collector" << std::endl;
 
     auto stats = collector::gather_files_stats(paths);
-    formatter::print_files_stats(stats);
 
-    // std::string str = "hello human!";
-
-    // std::cout << "str        |" << str << "|" << std::endl;
-    // std::cout << "str substr |" << str.substr(0, 5) << "|" << std::endl;
-    // std::cout << "str substr |" << str.substr(6) << "|" << std::endl;
+    formatter::report_files_stats(stats, config);
 
     return 0;
 }

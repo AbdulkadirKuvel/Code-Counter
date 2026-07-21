@@ -97,8 +97,8 @@ types::Config parser(int argc, char *argv[])
                 if (!fs::is_regular_file(target)) // Given path is not a valid file (e.g. Device Files, sockets...): Error
                 {
                         config.error_requested = true;
-                        config.error_info.title = "Missing Filename Error";
-                        config.error_info.message = "Config flag has been risen but no file indicated.";
+                    config.error_info.title = "False File Path Error";
+                    config.error_info.message = std::format("Given path \"{}\" is not a valid config file.", target.generic_string());
                         return config;
                 }
 

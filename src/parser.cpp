@@ -62,21 +62,21 @@ types::Config parser(int argc, char *argv[])
                 config_use = true;
                 if (i + 1 >= argc)
                 {
-                            config.error_requested = true;
+                    config.error_requested = true;
                     config.error_info.title = "Not Enough Arguments";
                     config.error_info.message = "Config flag has been risen but no argument given afterwards.";
-                            return config;
-                        }
+                    return config;
+                }
 
                 std::string_view next_arg = argv[i + 1];
 
                 if (next_arg.starts_with('-')) // Next argument is a flag: Error
-                    {
-                        config.error_requested = true;
-                        config.error_info.title = "Missing Filename Error";
-                        config.error_info.message = "Config flag has been risen but no file indicated.";
-                        return config;
-                    }
+                {
+                    config.error_requested = true;
+                    config.error_info.title = "Missing Filename Error";
+                    config.error_info.message = "Config flag has been risen but no file indicated.";
+                    return config;
+                }
 
                 fs::path target(next_arg);
 
@@ -98,10 +98,10 @@ types::Config parser(int argc, char *argv[])
 
                 if (!fs::is_regular_file(target)) // Given path is not a valid file (e.g. Device Files, sockets...): Error
                 {
-                        config.error_requested = true;
+                    config.error_requested = true;
                     config.error_info.title = "False File Path Error";
                     config.error_info.message = std::format("Given path \"{}\" is not a valid config file.", target.generic_string());
-                        return config;
+                    return config;
                 }
 
                 // Everything is A-okay.
@@ -136,22 +136,22 @@ types::Config parser(int argc, char *argv[])
                 return config;
             }
 
-                std::string line;
-                // Second iterator: reads the config file.
-                while (std::getline(file, line))
+            std::string line;
+            // Second iterator: reads the config file.
+            while (std::getline(file, line))
+            {
+                if (line == "")
+                    continue;
+                else if (line[0] == '#') // comment
                 {
-                    if (line == "")
-                        continue;
-                    else if (line[0] == '#') // comment
-                    {
                     // ignore
-                    }
-                    else // must be code
+                }
+                else // must be code
+                {
+                    // e.g: "recursive = true"
+                    size_t index = line.find('=');
+                    if (index != std::string::npos)
                     {
-                        // e.g: "recursive = true"
-                        size_t index = line.find('=');
-                        if (index != std::string::npos)
-                        {
                         // DO THIS TO AVOID DANGLING VIEW.
                         std::string_view line_view = line;
 
@@ -163,128 +163,128 @@ types::Config parser(int argc, char *argv[])
                         // an extra string_view named line_view was created above, because line_view.substr()
                         // does not create and delete another string like line.substr()
 
-                            if (value.empty())
-                            {
+                        if (value.empty())
+                        {
                             continue; // TODO: Throw error
-                            }
-                            bool val = tolower(value[0]) == 't'; // "true" or "false"
+                        }
+                        bool val = tolower(value[0]) == 't'; // "true" or "false"
 
-                            if (key == "recursive")
-                            {
-                                config.recursive = val;
-                            }
-                            else if (key == "text")
-                            {
+                        if (key == "recursive")
+                        {
+                            config.recursive = val;
+                        }
+                        else if (key == "text")
+                        {
                             config.md_form = val;
-                            }
-                            else if (key == "json")
-                            {
+                        }
+                        else if (key == "json")
+                        {
                             config.json_form = val;
-                            }
-                            else if (key == "blacklist")
+                        }
+                        else if (key == "blacklist")
+                        {
+                            config.blacklist.clear();
+
+                            size_t start = 0;
+                            size_t end = value.find(',');
+
+                            while (end != std::string::npos)
                             {
-                                config.blacklist.clear();
-
-                                size_t start = 0;
-                                size_t end = value.find(',');
-
-                                while (end != std::string::npos)
-                                {
                                 std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                    config.blacklist.insert(item);
+                                config.blacklist.insert(item);
 
-                                    start = end + 1;
-                                    end = value.find(',', start);
-                                }
+                                start = end + 1;
+                                end = value.find(',', start);
+                            }
                             config.blacklist.insert(std::string(utils::trim(value.substr(start))));
-                            }
-                            else if (key == "whitelist")
+                        }
+                        else if (key == "whitelist")
+                        {
+                            config.whitelist.clear();
+
+                            size_t start = 0;
+                            size_t end = value.find(',');
+
+                            while (end != std::string::npos)
                             {
-                                config.whitelist.clear();
-
-                                size_t start = 0;
-                                size_t end = value.find(',');
-
-                                while (end != std::string::npos)
-                                {
                                 std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                    config.whitelist.insert(item);
+                                config.whitelist.insert(item);
 
-                                    start = end + 1;
-                                    end = value.find(',', start);
-                                }
+                                start = end + 1;
+                                end = value.find(',', start);
+                            }
                             config.whitelist.insert(std::string(utils::trim(value.substr(start))));
-                            }
-                            else if (key == "add_blacklist")
+                        }
+                        else if (key == "add_blacklist")
+                        {
+                            size_t start = 0;
+                            size_t end = value.find(',');
+
+                            while (end != std::string::npos)
                             {
-                                size_t start = 0;
-                                size_t end = value.find(',');
-
-                                while (end != std::string::npos)
-                                {
                                 std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                    config.blacklist.insert(item);
+                                config.blacklist.insert(item);
 
-                                    start = end + 1;
-                                    end = value.find(',', start);
-                                }
+                                start = end + 1;
+                                end = value.find(',', start);
+                            }
                             config.blacklist.insert(std::string(utils::trim(value.substr(start))));
-                            }
-                            else if (key == "add_whitelist")
+                        }
+                        else if (key == "add_whitelist")
+                        {
+
+                            size_t start = 0;
+                            size_t end = value.find(',');
+
+                            while (end != std::string::npos)
                             {
-
-                                size_t start = 0;
-                                size_t end = value.find(',');
-
-                                while (end != std::string::npos)
-                                {
                                 std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                    config.whitelist.insert(item);
+                                config.whitelist.insert(item);
 
-                                    start = end + 1;
-                                    end = value.find(',', start);
-                                }
+                                start = end + 1;
+                                end = value.find(',', start);
+                            }
                             config.whitelist.insert(std::string(utils::trim(value.substr(start))));
-                            }
-                            else if (key == "remove_blacklist")
+                        }
+                        else if (key == "remove_blacklist")
+                        {
+                            size_t start = 0;
+                            size_t end = value.find(',');
+
+                            while (end != std::string::npos)
                             {
-                                size_t start = 0;
-                                size_t end = value.find(',');
-
-                                while (end != std::string::npos)
-                                {
                                 std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                    config.blacklist.erase(item);
+                                config.blacklist.erase(item);
 
-                                    start = end + 1;
-                                    end = value.find(',', start);
-                                }
+                                start = end + 1;
+                                end = value.find(',', start);
+                            }
                             config.blacklist.erase(std::string(utils::trim(value.substr(start))));
-                            }
-                            else if (key == "remove_whitelist")
-                            {
-                                size_t start = 0;
-                                size_t end = value.find(',');
+                        }
+                        else if (key == "remove_whitelist")
+                        {
+                            size_t start = 0;
+                            size_t end = value.find(',');
 
-                                while (end != std::string::npos)
-                                {
+                            while (end != std::string::npos)
+                            {
                                 std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                    config.whitelist.erase(item);
+                                config.whitelist.erase(item);
 
-                                    start = end + 1;
-                                    end = value.find(',', start);
-                                }
-                                // Do not miss the last word
+                                start = end + 1;
+                                end = value.find(',', start);
+                            }
+                            // Do not miss the last word
                             config.whitelist.erase(std::string(utils::trim(value.substr(start))));
-                            }
-                            else
-                            {
-                                // none
-                            }
                         }
                         else
                         {
-                            // pass it, whatever it is.
+                            // none
+                        }
+                    }
+                    else
+                    {
+                        // pass it, whatever it is.
                     }
                 }
             }

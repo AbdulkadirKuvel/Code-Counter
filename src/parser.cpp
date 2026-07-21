@@ -150,8 +150,17 @@ types::Config parser(int argc, char *argv[])
                         size_t index = line.find('=');
                         if (index != std::string::npos)
                         {
-                            std::string_view key = line.substr(0, index); // e.g: "recursive"
-                            std::string_view value = line.substr(index + 1); // e.g: "true"
+                        // DO THIS TO AVOID DANGLING VIEW.
+                        std::string_view line_view = line;
+
+                        std::string_view key = utils::trim(line_view.substr(0, index));    // e.g: "recursive"
+                        std::string_view value = utils::trim(line_view.substr(index + 1)); // e.g: "true"
+
+                        // Information: String.substr() does create a new string, then deletes it after.
+                        // when value variable is created it is overwritten on key. To avoid this,
+                        // an extra string_view named line_view was created above, because line_view.substr()
+                        // does not create and delete another string like line.substr()
+
                             if (value.empty())
                             {
                                 continue; // ADD FEATURE: Throw error

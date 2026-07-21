@@ -2,13 +2,8 @@
 #include <string>
 #include <unordered_set>
 
-std::unordered_set<std::string> blacklist = {
-    ".git", "bin", "obj", "lib", "node_modules", ".vs"};
-
-std::unordered_set<std::string> whitelist = {
-    ".py", ".java", ".c", ".cpp", ".h", ".hpp", ".cs",
-    ".html", ".css", ".js", ".rb", ".go", ".asm", ".v",
-    "makefile"};
+std::unordered_set<std::string> blacklist;
+std::unordered_set<std::string> whitelist;
 
 bool in_whitelist(fs::path path)
 {
@@ -30,11 +25,15 @@ namespace scanner
 {
     std::vector<fs::path> scan(types::Config config)
     {
+        whitelist = config.whitelist;
+        blacklist = config.blacklist;
         std::vector<fs::path> paths;
-        if (config.recursive) {
+        if (config.recursive)
+        {
             paths = list_files_recursive(config.path);
         }
-        else {
+        else
+        {
             paths = list_files(config.path);
         }
         return paths;

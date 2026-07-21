@@ -188,13 +188,13 @@ types::Config parser(int argc, char *argv[])
 
                                 while (end != std::string::npos)
                                 {
-                                    std::string item = std::string(value.substr(start, end - start));
+                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
                                     config.blacklist.insert(item);
 
                                     start = end + 1;
                                     end = value.find(',', start);
                                 }
-                                config.blacklist.insert(std::string(value.substr(start)));
+                            config.blacklist.insert(std::string(utils::trim(value.substr(start))));
                             }
                             else if (key == "whitelist")
                             {
@@ -205,13 +205,13 @@ types::Config parser(int argc, char *argv[])
 
                                 while (end != std::string::npos)
                                 {
-                                    std::string item = std::string(value.substr(start, end - start));
+                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
                                     config.whitelist.insert(item);
 
                                     start = end + 1;
                                     end = value.find(',', start);
                                 }
-                                config.whitelist.insert(std::string(value.substr(start)));
+                            config.whitelist.insert(std::string(utils::trim(value.substr(start))));
                             }
                             else if (key == "add_blacklist")
                             {
@@ -220,13 +220,13 @@ types::Config parser(int argc, char *argv[])
 
                                 while (end != std::string::npos)
                                 {
-                                    std::string item = std::string(value.substr(start, end - start));
+                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
                                     config.blacklist.insert(item);
 
                                     start = end + 1;
                                     end = value.find(',', start);
                                 }
-                                config.blacklist.insert(std::string(value.substr(start)));
+                            config.blacklist.insert(std::string(utils::trim(value.substr(start))));
                             }
                             else if (key == "add_whitelist")
                             {
@@ -236,13 +236,13 @@ types::Config parser(int argc, char *argv[])
 
                                 while (end != std::string::npos)
                                 {
-                                    std::string item = std::string(value.substr(start, end - start));
+                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
                                     config.whitelist.insert(item);
 
                                     start = end + 1;
                                     end = value.find(',', start);
                                 }
-                                config.whitelist.insert(std::string(value.substr(start)));
+                            config.whitelist.insert(std::string(utils::trim(value.substr(start))));
                             }
                             else if (key == "remove_blacklist")
                             {
@@ -251,13 +251,13 @@ types::Config parser(int argc, char *argv[])
 
                                 while (end != std::string::npos)
                                 {
-                                    std::string item = std::string(value.substr(start, end - start));
+                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
                                     config.blacklist.erase(item);
 
                                     start = end + 1;
                                     end = value.find(',', start);
                                 }
-                                config.blacklist.erase(std::string(value.substr(start)));
+                            config.blacklist.erase(std::string(utils::trim(value.substr(start))));
                             }
                             else if (key == "remove_whitelist")
                             {
@@ -266,14 +266,14 @@ types::Config parser(int argc, char *argv[])
 
                                 while (end != std::string::npos)
                                 {
-                                    std::string item = std::string(value.substr(start, end - start));
+                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
                                     config.whitelist.erase(item);
 
                                     start = end + 1;
                                     end = value.find(',', start);
                                 }
                                 // Do not miss the last word
-                                config.whitelist.erase(std::string(value.substr(start)));
+                            config.whitelist.erase(std::string(utils::trim(value.substr(start))));
                             }
                             else
                             {
@@ -283,7 +283,6 @@ types::Config parser(int argc, char *argv[])
                         else
                         {
                             // pass it, whatever it is.
-                        }
                     }
                 }
             }

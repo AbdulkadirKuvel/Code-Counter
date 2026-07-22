@@ -36,44 +36,74 @@ namespace scanner
     std::vector<fs::path> list_files(const fs::path &path, const types::Config &config)
     {
         std::vector<fs::path> paths;
+        std::error_code ec;
 
-        auto it = fs::directory_iterator(path);
+        auto options = fs::directory_options::skip_permission_denied;
+        auto it = fs::directory_iterator(path, options, ec);
         auto endit = fs::end(it);
 
         while (it != endit)
         {
-            if (in_whitelist(it->path()))
+            if (ec)
             {
-                paths.push_back(it->path().generic_string());
+                it.increment(ec);
+                continue;
             }
-            ++it;
-        }
 
+            const auto &current_path = it->path();
+            const auto ext = current_path.extension();
+            const auto filename = current_path.filename();
+
+            if (it->is_regular_file(ec))
+            {
+
+                if (!internal::in_blacklist(filename, config.blacklist) && (internal::in_whitelist(ext, config.whitelist) || internal::in_whitelist(filename, config.whitelist)))
+                {
+                    paths.push_back(current_path);
+                }
+            }
+            it.increment(ec);
+        }
         return paths;
     }
 
     std::vector<fs::path> list_files_recursive(const fs::path &root, const types::Config &config)
     {
         std::vector<fs::path> paths;
+        std::error_code ec;
 
-        auto it = fs::recursive_directory_iterator(path);
+        auto options = fs::directory_options::skip_permission_denied;
+        auto it = fs::recursive_directory_iterator(root, options, ec);
         auto endit = fs::end(it);
 
         while (it != endit)
         {
-            if (it->is_directory())
+            if (ec)
             {
-                if (in_blacklist(it->path()))
-                    it.disable_recursion_pending();
+                it.increment(ec);
+                continue;
             }
-            else if (it->is_regular_file())
-            { // when it is a file
-                if (in_whitelist(it->path()))
-                    paths.push_back(it->path().generic_string());
-            }
-            ++it;
-        }
 
+            const auto &current_path = it->path();
+            const auto ext = current_path.extension();
+            const auto filename = current_path.filename();
+
+            if (it->is_directory(ec))
+            {
+                if (internal::in_blacklist(filename, config.blacklist) || internal::in_blacklist(current_path, config.blacklist))
+                {
+                    it.disable_recursion_pending();
+                }
+            }
+            else if (it->is_regular_file(ec))
+            {
+                if (!internal::in_blacklist(filename, config.blacklist) && (internal::in_whitelist(ext, config.whitelist) || internal::in_whitelist(filename, config.whitelist)))
+                {
+                    paths.push_back(current_path);
+                }
+            }
+            it.increment(ec);
+        }
         return paths;
     }
 }

@@ -1,45 +1,39 @@
 #include <scanner.hpp>
 #include <string>
 #include <unordered_set>
-
-std::unordered_set<std::string> blacklist;
-std::unordered_set<std::string> whitelist;
-
-bool in_whitelist(fs::path path)
-{
-    if (whitelist.find(path.extension().string()) != whitelist.end())
-        return true;
-
-    return false;
-}
-
-bool in_blacklist(fs::path path)
-{
-    if (blacklist.find(path.extension().string()) != blacklist.end())
-        return true;
-
-    return false;
-}
-
 namespace scanner
 {
+    namespace internal
+    {
+        bool in_whitelist(const fs::path &path, const std::unordered_set<std::string> &whitelist)
+        {
+            const std::string ext = path.extension().string();
+            if (!ext.empty() && whitelist.contains(ext))
+                return true;
+
+            const std::string filename = path.filename().string();
+            return whitelist.contains(filename);
+        }
+
+        bool in_blacklist(const fs::path &path, const std::unordered_set<std::string> &blacklist)
+        {
+            const std::string filename = path.filename().string();
+            const std::string ext = path.extension().string();
+
+            return blacklist.contains(filename) || (!ext.empty() && blacklist.contains(ext));
+        }
+    }
     std::vector<fs::path> scan(types::Config config)
     {
-        whitelist = config.whitelist;
-        blacklist = config.blacklist;
         std::vector<fs::path> paths;
         if (config.recursive)
         {
-            paths = list_files_recursive(config.path);
+            return list_files_recursive(config.path, config);
         }
-        else
-        {
-            paths = list_files(config.path);
-        }
-        return paths;
+        return list_files(config.path, config);
     }
 
-    std::vector<fs::path> list_files(fs::path path)
+    std::vector<fs::path> list_files(const fs::path &path, const types::Config &config)
     {
         std::vector<fs::path> paths;
 
@@ -58,7 +52,7 @@ namespace scanner
         return paths;
     }
 
-    std::vector<fs::path> list_files_recursive(fs::path path)
+    std::vector<fs::path> list_files_recursive(const fs::path &root, const types::Config &config)
     {
         std::vector<fs::path> paths;
 

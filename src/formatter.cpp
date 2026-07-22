@@ -20,7 +20,7 @@ namespace formatter
         // Output form
         if (config.json_form)
         {
-            // report_formatter = std::make_unique<JsonFormatter>(); // TODO: Implement this.
+            report_formatter = std::make_unique<JsonFormatter>();
         }
         else if (config.md_form)
         {

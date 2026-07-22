@@ -38,7 +38,7 @@ public:
                      "Total", total.file_count, total.total_line,
                      total.code_line, total.comment_line, total.blank_line);
 
-        std::println(os, bottom_border);
+        std::println(os, "{}", bottom_border);
         
     }
 };

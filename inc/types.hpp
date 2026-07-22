@@ -23,18 +23,19 @@ namespace types
         bool md_form = false;
         bool table_form = true;
 
+        // The files that app will scan.
         std::unordered_set<std::string> whitelist = {
             ".py", ".java", ".c", ".cpp", ".h", ".hpp", ".cs",
             ".html", ".css", ".js", ".rb", ".go", ".asm", ".v",
-            "makefile"};
+            "makefile", "Makefile"};
 
+        // The folders that app will not bother scanning.
         std::unordered_set<std::string> blacklist = {
-            ".git", "bin", "obj", "lib", "node_modules", ".vs"};
+            ".git", "bin", "out", "obj", "lib", "node_modules", ".vs", "venv", ".venv", "__pycache__"};
 
-        fs::path path = ".";
-        // fs::path config_path = "config.txt";
-        fs::path config_path;
         Error error_info;
+        fs::path path = ".";
+        fs::path config_path;
         fs::path output_path;
     };
 

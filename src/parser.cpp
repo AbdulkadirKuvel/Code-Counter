@@ -2,6 +2,7 @@
 #include <print>
 #include <format>
 #include <utils.hpp>
+#include <ranges>
 
 types::Config parser(int argc, char *argv[])
 {
@@ -107,13 +108,14 @@ types::Config parser(int argc, char *argv[])
                 // Everything is A-okay.
                 config.config_path = argv[i + 1];
                 // config_file_name_exists = true;
-                i++; 
+                i++;
             }
             else if (!arg.starts_with('-')) // Handle if path is not a folder.
             {
                 fs::path target(arg);
 
-                if (!fs::is_directory(target)) {
+                if (!fs::is_directory(target))
+                {
                     config.error_requested = true;
                     config.error_info.title = "Not a Directory Error";
                     config.error_info.message = std::format("Given path \"{}\" is not a directory.", target.generic_string());
@@ -185,97 +187,86 @@ types::Config parser(int argc, char *argv[])
                         {
                             config.blacklist.clear();
 
-                            size_t start = 0;
-                            size_t end = value.find(',');
-
-                            while (end != std::string::npos)
+                            for (auto chunk : value | std::views::split(','))
                             {
-                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                config.blacklist.insert(item);
-
-                                start = end + 1;
-                                end = value.find(',', start);
+                                std::string_view token_view(chunk.begin(), chunk.end());
+                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
+                                
+                                if (!cleaned_item.empty()) 
+                                {
+                                    config.blacklist.emplace(cleaned_item);
+                                }
                             }
-                            config.blacklist.insert(std::string(utils::trim(value.substr(start))));
                         }
                         else if (key == "whitelist")
                         {
                             config.whitelist.clear();
 
-                            size_t start = 0;
-                            size_t end = value.find(',');
-
-                            while (end != std::string::npos)
+                            for (auto chunk : value | std::views::split(','))
                             {
-                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                config.whitelist.insert(item);
+                                std::string_view token_view(chunk.begin(), chunk.end());
+                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
 
-                                start = end + 1;
-                                end = value.find(',', start);
+                                if (!cleaned_item.empty()) {
+                                    config.whitelist.emplace(cleaned_item);
+                                }
                             }
-                            config.whitelist.insert(std::string(utils::trim(value.substr(start))));
                         }
                         else if (key == "add_blacklist")
                         {
-                            size_t start = 0;
-                            size_t end = value.find(',');
-
-                            while (end != std::string::npos)
+                            for (auto chunk : value | std::views::split(','))
                             {
-                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                config.blacklist.insert(item);
+                                std::string_view token_view(chunk.begin(), chunk.end());
+                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
 
-                                start = end + 1;
-                                end = value.find(',', start);
+                                if (!cleaned_item.empty())
+                                {
+                                    std::string item{cleaned_item};
+                                    config.blacklist.insert(item);
+                                }
                             }
-                            config.blacklist.insert(std::string(utils::trim(value.substr(start))));
                         }
                         else if (key == "add_whitelist")
                         {
-
-                            size_t start = 0;
-                            size_t end = value.find(',');
-
-                            while (end != std::string::npos)
+                            for (auto chunk : value | std::views::split(','))
                             {
-                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                config.whitelist.insert(item);
+                                std::string_view token_view(chunk.begin(), chunk.end());
+                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
 
-                                start = end + 1;
-                                end = value.find(',', start);
+                                if (!cleaned_item.empty())
+                                {
+                                    std::string item{cleaned_item};
+                                    config.whitelist.insert(item);
+                                }
                             }
-                            config.whitelist.insert(std::string(utils::trim(value.substr(start))));
                         }
                         else if (key == "remove_blacklist")
                         {
-                            size_t start = 0;
-                            size_t end = value.find(',');
-
-                            while (end != std::string::npos)
+                            for (auto chunk : value | std::views::split(','))
                             {
-                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                config.blacklist.erase(item);
+                                std::string_view token_view(chunk.begin(), chunk.end());
+                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
 
-                                start = end + 1;
-                                end = value.find(',', start);
+                                if (!cleaned_item.empty())
+                                {
+                                    std::string item{cleaned_item};
+                                    config.blacklist.erase(item);
+                                }
                             }
-                            config.blacklist.erase(std::string(utils::trim(value.substr(start))));
                         }
                         else if (key == "remove_whitelist")
                         {
-                            size_t start = 0;
-                            size_t end = value.find(',');
-
-                            while (end != std::string::npos)
+                            for (auto chunk : value | std::views::split(','))
                             {
-                                std::string item = std::string(utils::trim(value.substr(start, end - start)));
-                                config.whitelist.erase(item);
+                                std::string_view token_view(chunk.begin(), chunk.end());
+                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
 
-                                start = end + 1;
-                                end = value.find(',', start);
+                                if (!cleaned_item.empty())
+                                {
+                                    std::string item{cleaned_item};
+                                    config.whitelist.erase(item);
+                                }
                             }
-                            // Do not miss the last word
-                            config.whitelist.erase(std::string(utils::trim(value.substr(start))));
                         }
                         else
                         {
@@ -314,7 +305,7 @@ types::Config parser(int argc, char *argv[])
                 // if (!config_file_name_exists)
                 //     continue;
                 // else
-                    i++;
+                i++;
             }
             else if (arg == "-o" || arg == "--output")
             {

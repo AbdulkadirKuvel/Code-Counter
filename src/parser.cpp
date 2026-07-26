@@ -157,8 +157,8 @@ types::Config parser(int argc, char *argv[])
                         // DO THIS TO AVOID DANGLING VIEW.
                         std::string_view line_view = line;
 
-                        std::string_view key = utils::trim(line_view.substr(0, index));    // e.g: "recursive"
-                        std::string_view value = utils::trim(line_view.substr(index + 1)); // e.g: "true"
+                        std::string_view key = utils::sv_trim(line_view.substr(0, index));    // e.g: "recursive"
+                        std::string_view value = utils::sv_trim(line_view.substr(index + 1)); // e.g: "true"
 
                         // Information: String.substr() does create a new string, then deletes it after.
                         // when value variable is created it is overwritten on key. To avoid this,
@@ -187,10 +187,10 @@ types::Config parser(int argc, char *argv[])
                         {
                             config.blacklist.clear();
 
-                            for (auto chunk : value | std::views::split(','))
+                            for (auto&& chunk : value | std::views::split(','))
                             {
-                                std::string_view token_view(chunk.begin(), chunk.end());
-                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
+                                std::string_view token_view{chunk.begin(), chunk.end()};
+                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
                                 
                                 if (!cleaned_item.empty()) 
                                 {
@@ -202,10 +202,10 @@ types::Config parser(int argc, char *argv[])
                         {
                             config.whitelist.clear();
 
-                            for (auto chunk : value | std::views::split(','))
+                            for (auto&& chunk : value | std::views::split(','))
                             {
-                                std::string_view token_view(chunk.begin(), chunk.end());
-                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
+                                std::string_view token_view{chunk.begin(), chunk.end()};
+                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
 
                                 if (!cleaned_item.empty()) {
                                     config.whitelist.emplace(cleaned_item);
@@ -214,10 +214,10 @@ types::Config parser(int argc, char *argv[])
                         }
                         else if (key == "add_blacklist")
                         {
-                            for (auto chunk : value | std::views::split(','))
+                            for (auto&& chunk : value | std::views::split(','))
                             {
-                                std::string_view token_view(chunk.begin(), chunk.end());
-                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
+                                std::string_view token_view{chunk.begin(), chunk.end()};
+                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
 
                                 if (!cleaned_item.empty())
                                 {
@@ -228,10 +228,10 @@ types::Config parser(int argc, char *argv[])
                         }
                         else if (key == "add_whitelist")
                         {
-                            for (auto chunk : value | std::views::split(','))
+                            for (auto&& chunk : value | std::views::split(','))
                             {
-                                std::string_view token_view(chunk.begin(), chunk.end());
-                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
+                                std::string_view token_view{chunk.begin(), chunk.end()};
+                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
 
                                 if (!cleaned_item.empty())
                                 {
@@ -242,10 +242,10 @@ types::Config parser(int argc, char *argv[])
                         }
                         else if (key == "remove_blacklist")
                         {
-                            for (auto chunk : value | std::views::split(','))
+                            for (auto&& chunk : value | std::views::split(','))
                             {
-                                std::string_view token_view(chunk.begin(), chunk.end());
-                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
+                                std::string_view token_view{chunk.begin(), chunk.end()};
+                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
 
                                 if (!cleaned_item.empty())
                                 {
@@ -256,10 +256,10 @@ types::Config parser(int argc, char *argv[])
                         }
                         else if (key == "remove_whitelist")
                         {
-                            for (auto chunk : value | std::views::split(','))
+                            for (auto&& chunk : value | std::views::split(','))
                             {
-                                std::string_view token_view(chunk.begin(), chunk.end());
-                                std::string_view cleaned_item = utils::unquote_and_trim(token_view);
+                                std::string_view token_view{chunk.begin(), chunk.end()};
+                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
 
                                 if (!cleaned_item.empty())
                                 {

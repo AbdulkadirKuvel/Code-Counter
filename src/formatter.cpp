@@ -19,18 +19,13 @@ namespace formatter
 
         // Output form
         if (config.json_form)
-        {
             report_formatter = std::make_unique<JsonFormatter>();
-        }
-        else if (config.md_form)
-        {
+        // else if (config.md_form)
             // report_formatter = std::make_unique<MarkdownFormatter>(); // TODO: Implement this.
-        }
         else
-        {
             report_formatter = std::make_unique<TableFormatter>();
-        }
 
+        
         // Output point
         if (!config.output_path.empty())
         {
@@ -42,6 +37,7 @@ namespace formatter
                 types::Error error;
                 error.title = "File Error";
                 error.message = "Could not create the output file.";
+                // TODO
             }
             file.close();
         }
@@ -80,8 +76,8 @@ namespace formatter
         std::println("{}{}{}", color::red, error.message, color::reset);
     }
 
-    void print_content_info(std::string message)
+    void print_info(std::string message)
     {
-        std::println("{}{}{}", color::yellow, message, color::reset);
+        std::println("{}{}{}", color::blue, message, color::reset);
     }
 }

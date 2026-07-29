@@ -14,7 +14,7 @@
 int main(int argc, char *argv[])
 {
     fs::path path;
-    auto config = parser(argc, argv); // TODO
+    auto config = parser(argc, argv);
 
     if (config.help_requested)
     {
@@ -27,7 +27,21 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    auto paths = scanner::scan(config); // TODO
+    formatter::print_info("Completed reading configuration.");
+    
+    std::vector<std::filesystem::path> paths;
+
+    // TODO: Dont do it here.
+    if (config.single_file)
+    {
+        paths.push_back(config.path);
+    }
+    else
+    {
+        paths = scanner::scan(config);
+    }
+
+    formatter::print_info("Completed finding files.");
 
     auto stats = collector::gather_files_stats(paths);
 

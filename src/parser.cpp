@@ -133,7 +133,12 @@ types::Config parser(int argc, char *argv[])
         else if (!arg.starts_with('-'))
         {
             fs::path target(arg);
-            if (!fs::is_directory(target)) // What if it is just one file?
+            if (fs::is_regular_file(target))
+            {
+                // This is just one file
+                config.single_file = true;
+            }
+            else if (!fs::is_directory(target))
             {
                 config.error_requested = true;
                 config.error_info.title = "Not a Directory Error";

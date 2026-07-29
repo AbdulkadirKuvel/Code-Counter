@@ -18,6 +18,7 @@ namespace types
         // Initial Configuration
         bool help_requested = false;
         bool error_requested = false;
+        bool single_file = false;
         bool recursive = false;
         bool json_form = false;
         bool md_form = false;

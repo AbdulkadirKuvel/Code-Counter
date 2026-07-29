@@ -4,317 +4,143 @@
 #include <utils.hpp>
 #include <ranges>
 
-types::Config parser(int argc, char *argv[])
+namespace parser_internal
 {
-    fs::path path;
-    types::Config config;
-
-    if (argc >= 2)
+    void parse_config_file(const fs::path &path, types::Config &config)
     {
-        // bool in_flag = 0;
-
-        // First iterator: defines if user wants to get help, or use a prepared config file
-        bool config_use = false;
-        for (int i = 1; i < argc; i++)
+        std::ifstream file(path, std::ios::in);
+        if (!file.is_open())
         {
-            std::string_view arg = argv[i];
-            // print the help and shut down the app
-            if (arg == "-h" || arg == "--help")
-            {
-                config.help_requested = true;
-                return config;
-            }
-            else if (arg == "-o" || arg == "--output")
-            {
-                if (i + 1 >= argc)
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "Not Enough Arguments";
-                    config.error_info.message = "Output flag has been risen but no argument given afterwards.";
-                    return config;
-                }
-
-                std::string_view next_arg = argv[i + 1];
-
-                if (next_arg.starts_with('-')) // Next argument is a flag: Error
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "Missing Filename Error";
-                    config.error_info.message = "Output flag has been risen but no path indicated.";
-                    return config;
-                }
-
-                fs::path target(next_arg);
-
-                if (fs::exists(target)) // TODO: user may want to overwrite?
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "Existing File Error";
-                    config.error_info.message = "Given output path already exists.";
-                    return config;
-                }
-
-                // Everything is A-okay.
-                config.output_path = argv[i + 1];
-                i++;
-            }
-            else if (arg == "-c" || arg == "--config") // CONFIG USE HAS BEEN DETECTED
-            {
-                config_use = true;
-                if (i + 1 >= argc)
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "Not Enough Arguments";
-                    config.error_info.message = "Config flag has been risen but no argument given afterwards.";
-                    return config;
-                }
-
-                std::string_view next_arg = argv[i + 1];
-
-                if (next_arg.starts_with('-')) // Next argument is a flag: Error
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "Missing Filename Error";
-                    config.error_info.message = "Config flag has been risen but no file indicated.";
-                    return config;
-                }
-
-                fs::path target(next_arg);
-
-                if (fs::is_directory(target)) // Given path is a folder: Error
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "Not a File Error";
-                    config.error_info.message = std::format("Given path \"{}\" is a directory.", target.generic_string());
-                    return config;
-                }
-
-                if (!fs::exists(target)) // Given path does not exist: Error
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "No File Found Error";
-                    config.error_info.message = std::format("Given file \"{}\" could not be found.", target.generic_string());
-                    return config;
-                }
-
-                if (!fs::is_regular_file(target)) // Given path is not a valid file (e.g. Device Files, sockets...): Error
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "False File Path Error";
-                    config.error_info.message = std::format("Given path \"{}\" is not a valid config file.", target.generic_string());
-                    return config;
-                }
-
-                // Everything is A-okay.
-                config.config_path = argv[i + 1];
-                // config_file_name_exists = true;
-                i++;
-            }
-            else if (!arg.starts_with('-')) // Handle if path is not a folder.
-            {
-                fs::path target(arg);
-
-                if (!fs::is_directory(target))
-                {
-                    config.error_requested = true;
-                    config.error_info.title = "Not a Directory Error";
-                    config.error_info.message = std::format("Given path \"{}\" is not a directory.", target.generic_string());
-                    return config;
-                }
-
-                config.path = target;
-            }
+            config.error_requested = true;
+            config.error_info.title = "File Could Not Open";
+            config.error_info.message = std::format("File \"{}\" could not open for reading.", config.config_path.generic_string());
+            return;
         }
 
-        // Reading the config file
-        if (config_use)
+        std::string line;
+        while (std::getline(file, line))
         {
-            std::ifstream file(config.config_path, std::ios::in);
-            if (!file.is_open())
+            std::string_view line_view = utils::sv_trim(line);
+
+            if (line_view.empty() || line_view.starts_with('#'))
+                continue;
+
+            size_t equal_index = line_view.find('=');
+            if (equal_index == std::string_view::npos)
+                continue;
+
+            std::string_view key = utils::sv_trim(line_view.substr(0, equal_index));
+            std::string_view value = utils::sv_trim(line_view.substr(equal_index + 1));
+
+            if (value.empty()) // Change when value can be empty
             {
                 config.error_requested = true;
-                config.error_info.title = "File Could Not Open";
-                config.error_info.message = std::format("File \"{}\" could not open for reading.", config.config_path.generic_string());
+                config.error_info.title = "Config File Missing Value";
+                config.error_info.message = std::format("Config file has missing value\
+                    \n\"{}\"\
+                    value must not be empty.",
+                                                        line_view);
+            }
+
+            bool bool_val = (!value.empty() && std::tolower(static_cast<unsigned char>(value[0])) == 't');
+
+            if (key == "recursive")
+                config.recursive = bool_val;
+            else if (key == "json")
+                config.json_form = bool_val;
+            else if (key == "markdown")
+                config.md_form = bool_val;
+            else if (
+                key == "blacklist" || key == "whitelist" ||
+                key == "add blacklist" || key == "add whitelist" ||
+                key == "remove blacklist" || key == "remove whitelist")
+            {
+                auto &target_set = (key.contains("black")) ? config.blacklist : config.whitelist;
+
+                if (key == "blacklist" || key == "whitelist")
+                {
+                    target_set.clear();
+                }
+
+                for (auto &&chunk : value | std::views::split(','))
+                {
+                    std::string_view token{chunk.begin(), chunk.end()};
+                    token = utils::sv_unquote(utils::sv_trim(token));
+
+                    if (!token.empty())
+                    {
+                        if (key.starts_with('a')) // add or remove?
+                            target_set.emplace(token);
+                        else
+                            target_set.erase(std::string(token));
+                    }
+                }
+            }
+        }
+    }
+}
+
+types::Config parser(int argc, char *argv[])
+{
+    types::Config config;
+
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string_view arg = argv[i];
+
+        if (arg == "-h" || arg == "--help")
+        {
+            config.help_requested = true;
+            return config;
+        }
+        else if (arg == "-r" || arg == "--recursive")
+            config.recursive = true;
+
+        else if (arg == "-m" || arg == "--markdown")
+            config.md_form = true;
+
+        else if (arg == "-j" || arg == "--json")
+            config.json_form = true;
+
+        else if (arg == "-c" || arg == "--config")
+        {
+            if (i + 1 >= argc || argv[i + 1][0] == '-')
+            {
+                config.error_requested = true;
+                config.error_info.title = "Missing File Path Error";
+                config.error_info.message = "-c/--config flag requires a file path.";
                 return config;
             }
 
-            std::string line;
-            // Second iterator: reads the config file.
-            while (std::getline(file, line))
-            {
-                if (line == "")
-                    continue;
-                else if (line[0] == '#') // comment
-                {
-                    // ignore
-                }
-                else // must be code
-                {
-                    // e.g: "recursive = true"
-                    size_t index = line.find('=');
-                    if (index != std::string::npos)
-                    {
-                        // DO THIS TO AVOID DANGLING VIEW.
-                        std::string_view line_view = line;
+            fs::path config_path = argv[++i];
+            parser_internal::parse_config_file(config_path, config);
 
-                        std::string_view key = utils::sv_trim(line_view.substr(0, index));    // e.g: "recursive"
-                        std::string_view value = utils::sv_trim(line_view.substr(index + 1)); // e.g: "true"
-
-                        // Information: String.substr() does create a new string, then deletes it after.
-                        // when value variable is created it is overwritten on key. To avoid this,
-                        // an extra string_view named line_view was created above, because line_view.substr()
-                        // does not create and delete another string like line.substr()
-
-                        if (value.empty())
-                        {
-                            continue; // TODO: Throw error
-                        }
-                        bool val = tolower(value[0]) == 't'; // "true" or "false"
-
-                        if (key == "recursive")
-                        {
-                            config.recursive = val;
-                        }
-                        else if (key == "text")
-                        {
-                            config.md_form = val;
-                        }
-                        else if (key == "json")
-                        {
-                            config.json_form = val;
-                        }
-                        else if (key == "blacklist")
-                        {
-                            config.blacklist.clear();
-
-                            for (auto&& chunk : value | std::views::split(','))
-                            {
-                                std::string_view token_view{chunk.begin(), chunk.end()};
-                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
-                                
-                                if (!cleaned_item.empty()) 
-                                {
-                                    config.blacklist.emplace(cleaned_item);
-                                }
-                            }
-                        }
-                        else if (key == "whitelist")
-                        {
-                            config.whitelist.clear();
-
-                            for (auto&& chunk : value | std::views::split(','))
-                            {
-                                std::string_view token_view{chunk.begin(), chunk.end()};
-                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
-
-                                if (!cleaned_item.empty()) {
-                                    config.whitelist.emplace(cleaned_item);
-                                }
-                            }
-                        }
-                        else if (key == "add_blacklist")
-                        {
-                            for (auto&& chunk : value | std::views::split(','))
-                            {
-                                std::string_view token_view{chunk.begin(), chunk.end()};
-                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
-
-                                if (!cleaned_item.empty())
-                                {
-                                    std::string item{cleaned_item};
-                                    config.blacklist.insert(item);
-                                }
-                            }
-                        }
-                        else if (key == "add_whitelist")
-                        {
-                            for (auto&& chunk : value | std::views::split(','))
-                            {
-                                std::string_view token_view{chunk.begin(), chunk.end()};
-                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
-
-                                if (!cleaned_item.empty())
-                                {
-                                    std::string item{cleaned_item};
-                                    config.whitelist.insert(item);
-                                }
-                            }
-                        }
-                        else if (key == "remove_blacklist")
-                        {
-                            for (auto&& chunk : value | std::views::split(','))
-                            {
-                                std::string_view token_view{chunk.begin(), chunk.end()};
-                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
-
-                                if (!cleaned_item.empty())
-                                {
-                                    std::string item{cleaned_item};
-                                    config.blacklist.erase(item);
-                                }
-                            }
-                        }
-                        else if (key == "remove_whitelist")
-                        {
-                            for (auto&& chunk : value | std::views::split(','))
-                            {
-                                std::string_view token_view{chunk.begin(), chunk.end()};
-                                std::string_view cleaned_item = utils::sv_unquote(utils::sv_trim((token_view)));
-
-                                if (!cleaned_item.empty())
-                                {
-                                    std::string item{cleaned_item};
-                                    config.whitelist.erase(item);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // none
-                        }
-                    }
-                    else
-                    {
-                        // pass it, whatever it is.
-                    }
-                }
-            }
-            file.close();
+            if (config.error_requested)
+                return config;
         }
-
-        // Third iterator: configuration from console (most authorization)
-        for (int i = 1; i < argc; i++)
+        else if (arg == "-o" || arg == "--output")
         {
-            std::string_view arg = argv[i];
+            if (i + 1 >= argc || argv[i + 1][0] == '-')
+            {
+                config.error_requested = true;
+                config.error_info.title = "Missing File Path Error";
+                config.error_info.message = "-o/--output flag requires a file path.";
+                return config;
+            }
 
-            // "-h" or "--help" will be fore-handled in first iterator
-            if (arg == "-r" || arg == "--recursive")
+            config.output_path = argv[++i];
+        }
+        else if (!arg.starts_with('-'))
+        {
+            fs::path target(arg);
+            if (!fs::is_directory(target)) // What if it is just one file?
             {
-                config.recursive = true;
+                config.error_requested = true;
+                config.error_info.title = "Not a Directory Error";
+                config.error_info.message = std::format("Given path '{}' is not a directory.", target.generic_string());
+                return config;
             }
-            else if (arg == "-m" || arg == "--markdown")
-            {
-                config.md_form = true;
-            }
-            else if (arg == "-j" || arg == "--json")
-            {
-                config.json_form = true;
-            }
-            else if (arg == "-c" || arg == "--config")
-            {
-                // if (!config_file_name_exists)
-                //     continue;
-                // else
-                i++;
-            }
-            else if (arg == "-o" || arg == "--output")
-            {
-                i++;
-            }
-            // else // Path has been assigned in the first iterator.
-            // {
-            //     config.path = arg;
-            // }
+            config.path = target;
         }
     }
     return config;

@@ -1,5 +1,6 @@
 #include <scanner.hpp>
 #include <string>
+#include <print>
 #include <unordered_set>
 namespace scanner
 {
@@ -40,29 +41,49 @@ namespace scanner
 
         auto options = fs::directory_options::skip_permission_denied;
         auto it = fs::directory_iterator(path, options, ec);
+
+        if (ec)
+            return paths;
+
         auto endit = fs::end(it);
 
         while (it != endit)
         {
-            if (ec)
+            std::error_code entry_ec;
+            const auto &entry = *it;
+
+            if (entry.is_symlink(entry_ec))
             {
                 it.increment(ec);
+                if (ec)
+                    ec.clear();
+
                 continue;
             }
 
-            const auto &current_path = it->path();
-            const auto ext = current_path.extension();
-            const auto filename = current_path.filename();
+            const bool is_reg = entry.is_regular_file(entry_ec);
 
-            if (it->is_regular_file(ec))
+            if (!entry_ec && is_reg)
             {
+                const auto &current_path = entry.path();
+                const auto ext = current_path.extension();
+                const auto filename = current_path.filename();
 
-                if (!internal::in_blacklist(filename, config.blacklist) && (internal::in_whitelist(ext, config.whitelist) || internal::in_whitelist(filename, config.whitelist)))
+                if (it->is_regular_file(ec))
                 {
-                    paths.push_back(current_path);
+                    if (!internal::in_blacklist(filename, config.blacklist) &&
+                        (internal::in_whitelist(ext, config.whitelist) ||
+                         internal::in_whitelist(filename, config.whitelist)))
+                    {
+                        paths.push_back(current_path);
+                    }
                 }
             }
+
             it.increment(ec);
+
+            if (ec)
+                ec.clear();
         }
         return paths;
     }
@@ -70,40 +91,57 @@ namespace scanner
     std::vector<fs::path> list_files_recursive(const fs::path &root, const types::Config &config)
     {
         std::vector<fs::path> paths;
-        std::error_code ec;
+        std::vector<fs::path> directories_to_scan;
+        directories_to_scan.push_back(root);
 
-        auto options = fs::directory_options::skip_permission_denied;
-        auto it = fs::recursive_directory_iterator(root, options, ec);
-        auto endit = fs::end(it);
-
-        while (it != endit)
+        while (!directories_to_scan.empty())
         {
+            fs::path current_dir = directories_to_scan.back();
+            directories_to_scan.pop_back();
+
+            std::error_code ec;
+
+            auto options = fs::directory_options::skip_permission_denied;
+            auto it = fs::directory_iterator(current_dir, options, ec);
+
             if (ec)
-            {
-                it.increment(ec);
                 continue;
-            }
 
-            const auto &current_path = it->path();
-            const auto ext = current_path.extension();
-            const auto filename = current_path.filename();
-
-            if (it->is_directory(ec))
+            for (const auto &entry : it)
             {
-                if (internal::in_blacklist(filename, config.blacklist) || internal::in_blacklist(current_path, config.blacklist))
+                std::error_code entry_ec;
+
+                if (entry.is_symlink(entry_ec))
+                    continue;
+
+                bool is_dir = entry.is_directory(entry_ec);
+                if (entry_ec)
+                    continue;
+
+                const auto &path = entry.path();
+                const auto filename = path.filename();
+
+                if (is_dir)
                 {
-                    it.disable_recursion_pending();
+                    if (!internal::in_blacklist(filename, config.blacklist) &&
+                        !internal::in_blacklist(path, config.blacklist))
+                    {
+                        directories_to_scan.push_back(path);
+                    }
+                }
+                else if (entry.is_regular_file(entry_ec))
+                {
+                    const auto ext = path.extension();
+                    if (!internal::in_blacklist(filename, config.blacklist) &&
+                        (internal::in_whitelist(ext, config.whitelist) ||
+                         internal::in_whitelist(filename, config.whitelist)))
+                    {
+                        paths.push_back(path);
+                    }
                 }
             }
-            else if (it->is_regular_file(ec))
-            {
-                if (!internal::in_blacklist(filename, config.blacklist) && (internal::in_whitelist(ext, config.whitelist) || internal::in_whitelist(filename, config.whitelist)))
-                {
-                    paths.push_back(current_path);
-                }
-            }
-            it.increment(ec);
         }
         return paths;
     }
+
 }

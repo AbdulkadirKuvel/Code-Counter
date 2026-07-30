@@ -1,99 +1,98 @@
 # =========================================
-# Tarih: 23.02.2026
-# CROSS-PLATFORM MAKEFILE (C & C++17)
-# Geliştirici: Gemini 3.1 Pro & Abdulkadir 
+# Date: 23.02.2026
+# CROSS-PLATFORM MAKEFILE (C11 & C23)
+# Written by: Gemini 3.1 Pro & Abdulkadir 
 # =========================================
 
-# --- 1. DERLEYİCİ SEÇİMİ ---
+# --- 1. COMPILER SELECTION ---
 CC := gcc
 CXX := g++
 
-# --- 2. DİZİN YAPILANDIRMASI ---
+# --- 2. DIRECTORY CONFIGURATION ---
 SRC_DIR := src
 INC_DIR := inc
 OBJ_DIR := lib
 BIN_DIR := bin
 APP_NAME := app
 
-# --- 3. DERLEME BAYRAKLARI (FLAGS) ---
-# -Wall -Wextra: Tüm potansiyel hata uyarılarını açar (Clean Code için şart).
-# -pedantic: C/C++ standartlarına sıkı sıkıya uyulmasını zorunlu kılar.
-# -g: Hata ayıklama (Debug) sembollerini koda gömer (SegFault bulmak için kritik!).
-# -I$(INC_DIR): Derleyiciye başlık dosyalarını (header) nerede arayacağını söyler.
+# --- 3. FLAGS ---
+# -Wall -Wextra: Allows all potential warnings (for clean code).
+# -pedantic: Forces to fit C/C++ standards.
+# -g: Buries the debug symbols to code.
+# -I$(INC_DIR): Tells compiler regarding where to find header files.
 CFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c11 -g
-CXXFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c++26 -O3 -g
-# Windows ve C++23 <print> kütüphanesi için zorunlu Linker bayrağı
+CXXFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c++23 -O3 -g
 LDFLAGS := -lstdc++exp
 
-# --- 4. DOSYA TESPİTİ ---
-# src klasöründeki tüm .c ve .cpp dosyalarını otomatik bul.
+# --- 4. FILE DETECTION ---
+# Find all .c and .cpp files in given directories.
 C_SRCS := $(wildcard $(SRC_DIR)/*.c)
 CXX_SRCS := $(wildcard $(SRC_DIR)/*.cpp)
 
-# Bulunan kaynak dosyaların isimlerini .o (obje) formatına çevirip obj klasörüne yönlendir.
+# Change all found source code file names into .o format and direct to obj folder. 
 C_OBJS := $(C_SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 CXX_OBJS := $(CXX_SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 OBJS := $(C_OBJS) $(CXX_OBJS)
 
-# --- 5. İŞLETİM SİSTEMİ (OS) KONTROLÜ VE KOMUTLAR ---
+# --- 5. OS CONTROL AND COMMANDS ---
 ifeq ($(OS),Windows_NT)
 	TARGET := $(BIN_DIR)/$(APP_NAME).exe
-	# Windows'ta klasörleri ve içindekileri sessizce sil
 	CLEAN_CMD := if exist $(OBJ_DIR) rd /s /q $(OBJ_DIR) & if exist $(BIN_DIR) rd /s /q $(BIN_DIR)
-	# Windows'ta klasör yoksa oluştur
 	MKDIR_CMD := if not exist $(OBJ_DIR) mkdir $(OBJ_DIR) & if not exist $(BIN_DIR) mkdir $(BIN_DIR)
 	SCREEN_CLEAR := cls
 	SLEEP_CMD := timeout /t 1 /nobreak > NUL
 else
 	TARGET := $(BIN_DIR)/$(APP_NAME)
-	# Linux/Mac'te klasörleri ve içindekileri zorla sil
 	CLEAN_CMD := rm -rf $(OBJ_DIR) $(BIN_DIR)
-	# Linux/Mac'te klasör yoksa oluştur
 	MKDIR_CMD := mkdir -p $(OBJ_DIR) $(BIN_DIR)
 	SCREEN_CLEAR := clear
 	SLEEP_CMD := sleep 1
 endif
 
-# --- 6. DERLEME KURALLARI ---
+# --- 6. COMPILING RULES ---
 
-# 'make' yazıldığında çalışacak varsayılan kural. Önce klasörler, sonra derleme.
+# The default. Works when written "make" or "mingw32-make". First folders, then compile.
 compile: prepare $(TARGET)
+	@if "$(WAS_REBUILT)"=="" @echo --- [INFO] Project Is Up To Date. Compile Stopped. ---
 
-# Klasörlerin var olduğundan emin ol.
+# Ensure folders exist.
 prepare:
+	@echo --- [PREPARE] Checking Folders. ---
 	@$(MKDIR_CMD)
 
-# Linkleme (Bağlama) İşlemi: Tüm .o dosyalarını al ve çalıştırılabilir programı (app) üret.
+# Linking process: Take all .o files and create the executable.
 $(TARGET): $(OBJS)
-	@echo --- [LINK] Program baglaniyor: $@ ---
+	@echo --- [LINK] Linking Program: $@ ---
 	@$(CXX) $(OBJS) -o $@ $(LDFLAGS)
-	@echo --- [BASARILI] Derleme tamamlandi! ---
+	@echo --- [SUCCESS] Compiling Completed ---
+	$(eval WAS_REBUILT := 1)
 
-# C++ dosyalarını derleme kuralı ($<: kaynak dosya, $@: hedef obje dosyası)
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@echo [C++] Derleniyor: $<
+# Compiling C++ files.
+# $<: source file, $@: target object file
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | prepare
+	@echo [C++] Compile: $<
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# C dosyalarını derleme kuralı
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@echo [C]   Derleniyor: $<
+# Compiling C files.
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | prepare
+	@echo [C]   Compile: $<
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 
 run: compile
-	@echo --- [RUN] Proje calistiriliyor ---
+	@echo --- [RUN] Executing Program ---
 	@$(TARGET) $(ARGS)
-	@echo --- [BASARILI] Yurutme tamamlandi ---
+	@echo --- [SUCCESS] End Execution ---
 
-# --- 7. TEMİZLİK ---
-# 'make clean' yazıldığında derlenmiş dosyaları siler, projeyi sıfırlar.
+# --- 7. CLEANING ---
+# Deletes the compiled files, resets project.
 clean:
-	@echo --- [CLEAN] Proje temizleniyor ---
+	@echo --- [CLEAN] Resetting Project ---
 	@$(CLEAN_CMD)
-	@echo --- [BASARILI] Temizlik bitti ---
+	@echo --- [SUCCESS] Reset Done ---
 	@$(SLEEP_CMD) 
 	@$(SCREEN_CLEAR)
 
 
-# .PHONY: Bu isimlerde dosyalar olsa bile komut olarak algılanmalarını sağlar.
+# Allows even if there are folders named same as those.
 .PHONY: compile prepare run clean

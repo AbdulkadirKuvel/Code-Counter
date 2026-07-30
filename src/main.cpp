@@ -28,18 +28,10 @@ int main(int argc, char *argv[])
     }
 
     formatter::print_info("Completed reading configuration.");
-    
+
     std::vector<std::filesystem::path> paths;
 
-    // TODO: Dont do it here.
-    if (config.single_file)
-    {
-        paths.push_back(config.path);
-    }
-    else
-    {
-        paths = scanner::scan(config);
-    }
+    paths = scanner::scan(config);
 
     formatter::print_info("Completed finding files.");
 

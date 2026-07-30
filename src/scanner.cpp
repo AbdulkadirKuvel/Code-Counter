@@ -26,8 +26,13 @@ namespace scanner
     }
     std::vector<fs::path> scan(types::Config config)
     {
-        std::vector<fs::path> paths;
-        if (config.recursive)
+        if (config.single_file)
+        {
+            std::vector<fs::path> paths;
+            paths.push_back(config.path);
+            return paths;
+        }
+        else if (config.recursive)
         {
             return list_files_recursive(config.path, config);
         }

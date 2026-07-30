@@ -34,7 +34,7 @@ namespace formatter
     void report_files_stats(std::map<std::string, types::FileStats>, types::Config);
     void print_help();
     void print_error(types::Error);
-    void print_content_info(std::string);
+    void print_info(std::string);
 }
 
 #endif

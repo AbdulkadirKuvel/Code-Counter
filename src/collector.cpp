@@ -8,18 +8,15 @@ namespace collector
 {
     router get_analyzer(const std::string ext)
     {
-        if (c_style.find(ext) != c_style.end())
-        {
+        if (c_style.contains(ext))
             return lexer::file_analyzer_c;
-        }
-        if (py_style.find(ext) != py_style.end())
-        {
+            
+        if (py_style.contains(ext))
             return lexer::file_analyzer_py;
-        }
-        // if (py_style.find(ext) != py_style.end())
-        //     return file_analyzer_py; // TODO: add support for other languages
-        // if (py_style.find(ext) != py_style.end())
-        //     return file_analyzer_py; // TODO
+
+        if (xml_style.contains(ext))
+            return lexer::file_analyzer_xml;
+            
         return nullptr;
     }
 

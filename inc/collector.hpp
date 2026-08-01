@@ -48,7 +48,7 @@ const std::string ruby = ".rb";
 
 namespace collector
 {
-    using router = types::FileStats (*)(fs::path);
+    using router = types::FileStats (*)(const fs::path &);
 
     router get_analyzer(const std::string);
 

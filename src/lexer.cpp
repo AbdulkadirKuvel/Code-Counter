@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-
+#include <print>
 namespace lexer
 {
 
@@ -11,10 +11,10 @@ namespace lexer
      * @param path path of the file
      * @returns types::FileStats
      */
-    types::FileStats file_analyzer_c(fs::path path)
+    types::FileStats file_analyzer_c(const fs::path &path)
     {
         types::FileStats file_stats;
-        DFA_Machine current_state = State0;
+        DFA_Machine current_state = IN_CODE;
 
         bool in_multi_line_comment = 0;
         std::string line;
@@ -46,13 +46,13 @@ namespace lexer
             bool has_code = 0;
             bool has_comment = 0;
             if (in_multi_line_comment)
-                current_state = State3;
+                current_state = IN_MULTI_COMMENT;
 
             for (size_t i = 0; i < line.length(); i++)
             {
                 switch (current_state)
                 {
-                case State0:
+                case IN_CODE:
                 {
                     if (line[i] == '/')
                     {
@@ -68,19 +68,19 @@ namespace lexer
                                 i++;
                                 in_multi_line_comment = 1;
                                 has_comment = true;
-                                current_state = State3;
+                                current_state = IN_MULTI_COMMENT;
                             }
                         }
                     }
                     else if (line[i] == '\'')
                     {
                         has_code = true;
-                        current_state = State1;
+                        current_state = IN_SINGLE_STRING;
                     }
                     else if (line[i] == '\"')
                     {
                         has_code = true;
-                        current_state = State2;
+                        current_state = IN_DOUBLE_STRING;
                     }
                     else if (!std::isspace(line[i]))
                     {
@@ -88,7 +88,7 @@ namespace lexer
                     }
                 }
                 break;
-                case State1:
+                case IN_SINGLE_STRING:
                 {
                     if (line[i] == '\\')
                     {
@@ -96,10 +96,10 @@ namespace lexer
                         continue;
                     }
                     else if (line[i] == '\'')
-                        current_state = State0;
+                        current_state = IN_CODE;
                 }
                 break;
-                case State2:
+                case IN_DOUBLE_STRING:
                 {
                     if (line[i] == '\\')
                     {
@@ -107,10 +107,10 @@ namespace lexer
                         continue;
                     }
                     else if (line[i] == '\"')
-                        current_state = State0;
+                        current_state = IN_CODE;
                 }
                 break;
-                case State3:
+                case IN_MULTI_COMMENT:
                 {
                     has_comment = true;
                     if (line[i] == '*')
@@ -119,7 +119,7 @@ namespace lexer
                         {
                             if (line[i + 1] == '/')
                             {
-                                current_state = State0;
+                                current_state = IN_CODE;
                                 in_multi_line_comment = false;
                             }
                         }
@@ -144,11 +144,10 @@ namespace lexer
         return file_stats;
     }
 
-    types::FileStats file_analyzer_py(fs::path path)
+    types::FileStats file_analyzer_py(const fs::path &path)
     {
         types::FileStats file_stats;
-        // std::cout << "Debugging...\n";
-        DFA_Machine current_state = State0;
+        DFA_Machine current_state = IN_CODE;
 
         bool in_multi_line_comment = 0;
         char mark = '0';
@@ -181,13 +180,13 @@ namespace lexer
             bool has_code = 0;
             bool has_comment = 0;
             if (in_multi_line_comment)
-                current_state = State3;
+                current_state = IN_MULTI_COMMENT;
 
             for (size_t i = 0; i < line.length(); i++)
             {
                 switch (current_state)
                 {
-                case State0:
+                case IN_CODE:
                 {
                     if (line[i] == '#') // Yorum girişi
                     {
@@ -196,11 +195,11 @@ namespace lexer
                     }
                     else if (line[i] == '\'')
                     {
-                        current_state = State1;
+                        current_state = IN_SINGLE_STRING;
                     }
                     else if (line[i] == '\"')
                     {
-                        current_state = State2;
+                        current_state = IN_DOUBLE_STRING;
                     }
                     else if (!std::isspace(line[i]))
                     {
@@ -208,7 +207,7 @@ namespace lexer
                     }
                 }
                 break;
-                case State1:
+                case IN_SINGLE_STRING:
                 {
                     if (line[i] == '\\')
                     {
@@ -221,16 +220,16 @@ namespace lexer
                         {
                             i++;
                             in_multi_line_comment = true;
-                            current_state = State3;
+                            current_state = IN_MULTI_COMMENT;
                             has_code = true;
                             mark = '\'';
                         }
                         else
-                            current_state = State0;
+                            current_state = IN_CODE;
                     }
                 }
                 break;
-                case State2:
+                case IN_DOUBLE_STRING:
                 {
                     if (line[i] == '\\')
                     {
@@ -243,23 +242,23 @@ namespace lexer
                         {
                             i++;
                             in_multi_line_comment = true;
-                            current_state = State3;
+                            current_state = IN_MULTI_COMMENT;
                             has_code = true;
                             mark = '\"';
                         }
                         else
-                            current_state = State0;
+                            current_state = IN_CODE;
                     }
                 }
                 break;
-                case State3:
+                case IN_MULTI_COMMENT:
                 {
                     has_comment = true;
 
                     if (line[i] == mark && i + 2 < line.length() && line[i + 1] == mark && line[i + 2] == mark)
                     {
                         in_multi_line_comment = false;
-                        current_state = State0;
+                        current_state = IN_CODE;
                         i += 2;
                     }
                 }

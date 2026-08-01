@@ -9,15 +9,16 @@ namespace lexer
 {
     enum DFA_Machine
     {
-        State0, // start
-        State1, // one character string (')
-        State2, // two characters string (")
-        State3, // in multiline comment (/*) or (""")
+        IN_CODE, // start
+        IN_SINGLE_STRING, // one character string (')
+        IN_DOUBLE_STRING, // two characters string (")
+        IN_MULTI_COMMENT, // in multiline comment (/*) or (""")
     };
 
     namespace fs = std::filesystem;
 
-    types::FileStats file_analyzer_c(fs::path);
-    types::FileStats file_analyzer_py(fs::path);
+    types::FileStats file_analyzer_c(const fs::path &);
+    types::FileStats file_analyzer_py(const fs::path &);
+    types::FileStats file_analyzer_xml(const fs::path &);
 }
 #endif

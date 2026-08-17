@@ -21,8 +21,11 @@ namespace lexer
         size_t blank = 0;
     };
 
+    
     inline LineMetrics analyze_lines(std::string_view);
     
+    void file_analyzer_c(std::string_view, types::FileStats &);
+    void file_analyzer_py(std::string_view, types::FileStats &);
     void file_analyzer_xml(std::string_view, types::FileStats &);
 }
 #endif

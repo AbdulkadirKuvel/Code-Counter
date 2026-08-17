@@ -14,7 +14,7 @@
 int main(int argc, char *argv[])
 {
     fs::path path;
-    auto config = parser(argc, argv);
+    auto config = parser::parse_commands(argc, argv);
 
     if (config.help_requested)
     {

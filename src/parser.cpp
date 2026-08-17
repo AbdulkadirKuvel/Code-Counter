@@ -1,7 +1,7 @@
 #include <parser.hpp>
+#include <utils.hpp>
 #include <print>
 #include <format>
-#include <utils.hpp>
 #include <ranges>
 
 namespace parser_internal
@@ -115,6 +115,8 @@ types::Config parser(int argc, char *argv[])
             fs::path config_path = argv[++i];
             parser_internal::parse_config_file(config_path, config);
 
+            // TODO: parse_config_file may override terminal commands. Must not happen.
+            
             if (config.error_requested)
                 return config;
         }

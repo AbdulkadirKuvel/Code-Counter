@@ -1,3 +1,6 @@
+#include <IReportFormatter.hpp>
+#include <JsonFormatter.hpp>
+#include <TableFormatter.hpp>
 #include <formatter.hpp>
 #include <iostream>
 #include <lexer.hpp>
@@ -5,11 +8,6 @@
 #include <string_view>
 #include <fstream>
 #include <map>
-
-#include <IReportFormatter.hpp>
-#include <JsonFormatter.hpp>
-#include <TableFormatter.hpp>
-
 
 namespace formatter
 {

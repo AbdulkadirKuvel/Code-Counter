@@ -1,13 +1,13 @@
-#include <iostream>
-#include <string>
 #include <scanner.hpp>
 #include <collector.hpp>
 #include <formatter.hpp>
-#include <filesystem>
 #include <parser.hpp>
 #include <IReportFormatter.hpp>
 #include <TableFormatter.hpp>
 #include <JsonFormatter.hpp> // TODO
+#include <filesystem>
+#include <iostream>
+#include <string>
 
 // namespace fs = std::filesystem;
 

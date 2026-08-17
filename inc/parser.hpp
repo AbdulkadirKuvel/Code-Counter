@@ -11,11 +11,9 @@
 
 namespace fs = std::filesystem;
 
-namespace parser_internal
+namespace parser
 {
-    void parse_config_file(const fs::path &, types::Config &);
+    types::Config parse_commands(int argc, char *argv[]);
 }
-
-types::Config parser(int argc, char *argv[]);
 
 #endif

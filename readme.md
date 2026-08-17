@@ -1,4 +1,4 @@
-# CodeCounter 🚀
+# CodeCounter
 
 ![C++](https://img.shields.io/badge/C++-23-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
@@ -7,7 +7,7 @@
 
 Built with **systems programming** principles in mind, it leverages C++23 features to deliver maximum performance through zero-cost abstractions, memory safety, and highly optimized I/O operations.
 
-Please note that this tool is under active development.
+Please note that this tool is under active development and yet to publish it's mvp soon. The current code here works fine but lacks a lot of features.
 
 ---
 
@@ -26,25 +26,14 @@ Please note that this tool is under active development.
 CodeCounter is built on **Clean Architecture** principles. The core business logic (analyzing files) is strictly separated from the presentation layer (formatting output).
 
 ### The Reporting Strategy
-Instead of monolithic `if/else` blocks, the tool dynamically injects the requested formatting strategy at runtime:
 
-```cpp
-// Interface
-class IReportFormatter {
-public:
-    virtual ~IReportFormatter() = default;
-    virtual void format(std::ostream& os, const std::map<std::string, types::FileStats>& stats) const = 0;
-};
-
-```
-
-Depending on the user's CLI arguments (`--json`, `--m`, or default table), the corresponding formatter (`JsonFormatter`, `MarkdownFormatter`, or `TableFormatter`) is instantiated and passed to either `std::cout` or a `std::ofstream`.
+Depending on the user's CLI arguments (`--json`, `--m`, or default table), the corresponding formatter (`JsonFormatter`, or `TableFormatter`, more to come...) is instantiated and passed to either `std::cout` or a `std::ofstream`.
 
 ---
 
-## 🚀 Roadmap / Upcoming Features
+## Roadmap / Upcoming Features
 
-We are constantly pushing the boundaries of performance. The following features will be implemented in near time:
+We are currently working on constantly pushing the boundaries of performance. The following features will be implemented in near time:
 
 * **Multithreading & Concurrency:** Distributing file I/O and parsing workloads across multiple CPU cores using `std::thread`, `std::mutex`, and `std::atomic` to prevent race conditions.
 * **Memory-Mapped Files (mmap):** Bypassing standard `std::ifstream` overhead by mapping files directly into RAM and utilizing `reinterpret_cast` for raw byte processing, aiming to parse millions of lines in milliseconds.
@@ -57,7 +46,26 @@ We are constantly pushing the boundaries of performance. The following features 
 
 * A C++23 compatible compiler (GCC 13+, Clang 16+, or MSVC 19.38+)
 
-### Information
+* This part will be updated when MVP is released
 
-This readme will be updated when MVP is released.
+### TODOS
 
+1. Implement Multithreading.
+
+2. Implement Memory maps.
+
+3. Create more accurate lexers
+
+4. Realize C style single line comments can be multiline with the use of "\\", for example:
+
+```C
+int main() {
+    // Single line comment
+    bool var = true;
+
+    // Single line comment \
+    sike!
+    return 0;
+}
+
+```

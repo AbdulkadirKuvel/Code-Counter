@@ -13,7 +13,7 @@ SRC_DIR := src
 INC_DIR := inc
 OBJ_DIR := lib
 BIN_DIR := bin
-APP_NAME := app
+APP_NAME := xloc
 
 # --- 3. FLAGS ---
 CFLAGS := -I$(INC_DIR) -Wall -Wextra -pedantic -std=c11 -g

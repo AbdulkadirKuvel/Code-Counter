@@ -48,7 +48,7 @@ namespace formatter
     void print_help()
     {
         std::println("┌───────────────────────────────────────────────────────────────────┐");
-        std::println("│                type: tokenizer <path> [<commands>]                │"); // TODO: Change name
+        std::println("│                     xloc  <path> [<commands>]                     │");
         std::println("├────────────────────┬──────────────┬───────────────────────────────┤");
         std::println("│      commands      │   argument   │          explanation          │");
         std::println("├────┬───────────────┼──────────────┼───────────────────────────────┤");
@@ -58,10 +58,8 @@ namespace formatter
         std::println("├────┼───────────────┼──────────────┼───────────────────────────────┤");
         std::println("│ -j │ --json        │ none         │ format stats as json          │");
         std::println("├────┼───────────────┼──────────────┼───────────────────────────────┤");
-        std::println("│ -m │ --markdown    │ none         │ format stats as markdown      │");
-        std::println("├────┼───────────────┼──────────────┼───────────────────────────────┤");
-        std::println("│ -c │ --config      │ <filepath>   │ use config file 'config.json' │");
-        std::println("├────┼───────────────┼──────────────┼───────────────────────────────┤");
+        std::println("│ -c │ --config      │ <filepath>   │ use config file               │");
+        std::println("├────┴───────────────┼──────────────┼───────────────────────────────┤");
         std::println("│ -o │ --output      │ <outputpath> │ log into a file               │");
         std::println("├────┴───────────────┼──────────────┼───────────────────────────────┤");
         std::println("│                    │      ──      │                               │");

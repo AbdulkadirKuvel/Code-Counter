@@ -48,12 +48,12 @@ const std::string ruby = ".rb";
 
 namespace collector
 {
-    using router = types::FileStats (*)(const fs::path &);
+    using router = void (*)(std::string_view, types::FileStats &);
 
     router get_analyzer(const std::string);
 
     std::map<std::string, types::FileStats> gather_files_stats(std::vector<fs::path>);
-    
+
 }
 
 #endif
